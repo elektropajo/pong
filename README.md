@@ -1,11 +1,17 @@
 # pong
-A JavaScript pong game using the new requestAnimationFrame functionality.
+Pong escrito en JavaScript usando canvas y requestAnimationFrame.
+
+## Origen
+Este juego parte, inicialmente, del curso "Code Your First Game: Arcade Classic in JavaScript on Canvas" impartido en udemy.com por Chris DeLeon, sustituyendo las funciones para animación obsoletas por requestAnimationFrame.
+
+## Por qué JavaScript (y no jQuery o CSS)
+Por rendimiento. Más información en http://davidwalsh.name/css-js-animation.
 
 ## TO DO list
-- Keyboard and touchscreen control.
-- Random initial angle.
-- Responsive canvas.
-- Improve code according to https://developer.mozilla.org/en-US/docs/Games/Anatomy.
-- ¿Sound?
-- ¿Decoration?
-- ¿Levels and extras?
+- Control táctil y por teclado.
+- Ángulo de inicio aleatorio.
+- Canvas responsivo.
+- Mejoras del código de acuerdo a https://developer.mozilla.org/en-US/docs/Games/Anatomy.
+- ¿Sonido?
+- ¿Decoracion?
+- ¿Niveles, extras, etc.?
