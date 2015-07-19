@@ -3,13 +3,22 @@
 <head>
 <title>Game</title>
 <meta charset='utf-8'>
+<meta name="viewport" content="width=device-width, user-scalable=no">
+<style>
+.container {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}
+</style>
 <script>
-var canvas,
+var parent,
+    canvas,
     ctx,
     ballX = 50,
     ballY = 50,
     ballSpeedX = 8,
-    ballSpeedY = 8,
+    ballSpeedY = Math.random() * 8,
     pad1Y = 0,
     pad2Y = 0,
     pad2Speed = 7,
@@ -20,7 +29,8 @@ var canvas,
 const PAD_WIDTH = 10,
       PAD_HEIGHT = 100,
       BALL_WIDTH = 10,
-      WINNING_SCORE = 3;
+      WINNING_SCORE = 3,
+      ASPECT_RATIO = 0.625;
 
 function calculateMousePosition(e) {
   var rect = canvas.getBoundingClientRect(),
@@ -42,21 +52,36 @@ function handleMouseClick() {
 }
 
 window.onload = function () {
+  parent = document.querySelector('.container');
   canvas = document.querySelector('#gameCanvas');
   ctx = canvas.getContext('2d');
+  resizeCanvas();
   startAnimation();
   canvas.addEventListener('mousedown', handleMouseClick);
   canvas.addEventListener('mousemove', function(e) {
     var mousePos = calculateMousePosition(e);
     pad1Y = mousePos.y - PAD_HEIGHT/2;
   });
+  window.addEventListener('resize', resizeCanvas, false);
+}
+
+function resizeCanvas() {
+  parent.style.height = window.innerHeight - 15 + 'px';
+  var proportion = parent.clientWidth / parent.clientHeight;
+  if ( proportion >= ASPECT_RATIO ) {
+    canvas.height = parent.clientHeight;
+    canvas.width = canvas.height / ASPECT_RATIO;
+  } else {
+    canvas.width = parent.clientWidth;
+    canvas.height = canvas.width * ASPECT_RATIO;
+  }
 }
 
 function animationLoop(timeStamp) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // 1 - Clear
-  draw(); // 2 Draw
-  move(); // 3 Move
-  rAF = requestAnimationFrame(animationLoop); // 4 Call again
+  ctx.clearRect(0, 0, canvas.width, canvas.height);             // 1 Clear
+  draw();                                                       // 2 Draw
+  move();                                                       // 3 Move
+  rAF = requestAnimationFrame(animationLoop);                   // 4 Call again
 }
 
 function startAnimation() { rAF = requestAnimationFrame(animationLoop); }
@@ -69,8 +94,8 @@ function draw() {
   drawRect(canvas.width-PAD_WIDTH, pad2Y, PAD_WIDTH, PAD_HEIGHT, 'white');
   drawCircle(ballX, ballY, 5, 0, Math.PI*2, 'red');
   ctx.fillStyle = 'white';
-  ctx.fillText(player1Score, 100, 100);
-  ctx.fillText(player2Score, canvas.width-100, 100);
+  ctx.fillText(player1Score, canvas.width * 0.25, canvas.height * 0.5);
+  ctx.fillText(player2Score, canvas.width * 0.75, canvas.height * 0.5);
 }
 
 function drawRect(x,y,width,height,color) {
@@ -90,6 +115,7 @@ function resetBall() {
     winScreen = true;
   }
   ballSpeedX = -ballSpeedX;
+  ballSpeedY = Math.random() * 8;
   ballX = canvas.width/2;
   ballY = canvas.height/2;
 }
@@ -141,8 +167,10 @@ function move() {
 </script>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="600">
-    <p>Tu navegador no soporta canvas.</p>
-  </canvas>
+  <div class="container">
+    <canvas id="gameCanvas" width="800" height="600">
+      <p>Tu navegador no soporta canvas.</p>
+    </canvas>
+  </div>
 </body>
 </html>
