@@ -12,157 +12,159 @@
 }
 </style>
 <script>
-var parent,
-    canvas,
-    ctx,
-    ballX = 50,
-    ballY = 50,
-    ballSpeedX = 8,
-    ballSpeedY = Math.random() * 8,
-    pad1Y = 0,
-    pad2Y = 0,
-    pad2Speed = 7,
-    rAF,
-    player1Score = 0,
-    player2Score = 0,
-    winScreen = false;
-const PAD_WIDTH = 10,
-      PAD_HEIGHT = 100,
-      BALL_WIDTH = 10,
-      WINNING_SCORE = 3,
-      ASPECT_RATIO = 0.625;
+;(function () {
+  var parent,
+      canvas,
+      ctx,
+      ballX = 50,
+      ballY = 50,
+      ballSpeedX = 8,
+      ballSpeedY = Math.random() * 8,
+      pad1Y = 0,
+      pad2Y = 0,
+      pad2Speed = 7,
+      rAF,
+      player1Score = 0,
+      player2Score = 0,
+      winScreen = false;
+  const PAD_WIDTH = 10,
+        PAD_HEIGHT = 100,
+        BALL_WIDTH = 10,
+        WINNING_SCORE = 3,
+        ASPECT_RATIO = 0.625;
 
-function calculateMousePosition(e) {
-  var rect = canvas.getBoundingClientRect(),
-      root = document.documentElement,
-      mouseX = e.clientX - rect.left - root.scrollLeft,
-      mouseY = e.clientY - rect.top - root.scrollTop;
-  return {
-    x:mouseX,
-    y:mouseY
-  };
-}
-
-function handleMouseClick() {
-  if (winScreen) {
-    player1Score = 0;
-    player2Score = 0;
-    winScreen = false;
+  window.onload = function () {
+    parent = document.querySelector('.container');
+    canvas = document.querySelector('#gameCanvas');
+    ctx = canvas.getContext('2d');
+    resizeCanvas();
+    main();
+    canvas.addEventListener('mousedown', handleMouseClick);
+    canvas.addEventListener('mousemove', function(e) {
+      var mousePos = calculateMousePosition(e);
+      pad1Y = mousePos.y - PAD_HEIGHT/2;
+    });
+    window.addEventListener('resize', resizeCanvas, false);
   }
-}
 
-window.onload = function () {
-  parent = document.querySelector('.container');
-  canvas = document.querySelector('#gameCanvas');
-  ctx = canvas.getContext('2d');
-  resizeCanvas();
-  startAnimation();
-  canvas.addEventListener('mousedown', handleMouseClick);
-  canvas.addEventListener('mousemove', function(e) {
-    var mousePos = calculateMousePosition(e);
-    pad1Y = mousePos.y - PAD_HEIGHT/2;
-  });
-  window.addEventListener('resize', resizeCanvas, false);
-}
-
-function resizeCanvas() {
-  parent.style.height = window.innerHeight - 15 + 'px';
-  var proportion = parent.clientWidth / parent.clientHeight;
-  if ( proportion >= ASPECT_RATIO ) {
-    canvas.height = parent.clientHeight;
-    canvas.width = canvas.height / ASPECT_RATIO;
-  } else {
-    canvas.width = parent.clientWidth;
-    canvas.height = canvas.width * ASPECT_RATIO;
+  function calculateMousePosition(e) {
+    var rect = canvas.getBoundingClientRect(),
+        root = document.documentElement,
+        mouseX = e.clientX - rect.left - root.scrollLeft,
+        mouseY = e.clientY - rect.top - root.scrollTop;
+    return {
+      x:mouseX,
+      y:mouseY
+    };
   }
-}
 
-function animationLoop(timeStamp) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);             // 1 Clear
-  draw();                                                       // 2 Draw
-  move();                                                       // 3 Move
-  rAF = requestAnimationFrame(animationLoop);                   // 4 Call again
-}
-
-function startAnimation() { rAF = requestAnimationFrame(animationLoop); }
-function stopAnimation()  { if (rAF) { cancelAnimationFrame(rAF); }
-}
-
-function draw() {
-  drawRect(0, 0, canvas.width, canvas.height, 'black');
-  drawRect(0, pad1Y, PAD_WIDTH, PAD_HEIGHT, 'white');
-  drawRect(canvas.width-PAD_WIDTH, pad2Y, PAD_WIDTH, PAD_HEIGHT, 'white');
-  drawCircle(ballX, ballY, 5, 0, Math.PI*2, 'red');
-  ctx.fillStyle = 'white';
-  ctx.fillText(player1Score, canvas.width * 0.25, canvas.height * 0.5);
-  ctx.fillText(player2Score, canvas.width * 0.75, canvas.height * 0.5);
-}
-
-function drawRect(x,y,width,height,color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x, y, width, height);
-}
-
-function drawCircle(centerX, centerY, radius, ini, end, color) {
-  ctx.fillStyle = 'red';
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, ini, end, true);
-  ctx.fill();
-}
-
-function resetBall() {
-  if ( player1Score >= WINNING_SCORE || player2Score >= WINNING_SCORE) {
-    winScreen = true;
-  }
-  ballSpeedX = -ballSpeedX;
-  ballSpeedY = Math.random() * 8;
-  ballX = canvas.width/2;
-  ballY = canvas.height/2;
-}
-
-function computerMove() {
-  if ( pad2Y + (PAD_HEIGHT / 3) * 2 < ballY ) {
-    pad2Y += pad2Speed;
-  } else if ( pad2Y + (PAD_HEIGHT / 3) > ballY ) {
-    pad2Y -= pad2Speed;
-  }
-}
-
-function move() {
-  if (winScreen) {
-   if (player1Score >= WINNING_SCORE) {
-     ctx.fillText('You win! Click to continue...', 330, 100);
-   } else if (player2Score >= WINNING_SCORE) {
-     ctx.fillText('You lose! Click to continue...', 330, 100);
-   }
-   return;
-  }
-  computerMove();
-  ballX += ballSpeedX;
-  ballY += ballSpeedY;
-  if ( ballX < PAD_WIDTH + BALL_WIDTH) {
-    if (ballY > pad1Y && ballY < pad1Y + PAD_HEIGHT ) {
-      var deltaY = ballY - (pad1Y+(PAD_HEIGHT/2));
-      ballSpeedX = -ballSpeedX;
-      ballSpeedY = deltaY * 0.35;
-    } else {
-      player2Score++;
-      resetBall();
-    }
-  } else if ( ballX > canvas.width - PAD_WIDTH - BALL_WIDTH ) {
-    if (ballY > pad2Y && ballY < pad2Y + PAD_HEIGHT ) {
-      var deltaY = ballY - (pad2Y+(PAD_HEIGHT/2));
-      ballSpeedX = -ballSpeedX;
-      ballSpeedY = deltaY * 0.3;
-    } else {
-      player1Score++;
-      resetBall();
+  function handleMouseClick() {
+    if (winScreen) {
+      player1Score = 0;
+      player2Score = 0;
+      winScreen = false;
     }
   }
-  if ( ballY > canvas.height - BALL_WIDTH || ballY < BALL_WIDTH) {
-    ballSpeedY = -ballSpeedY;
+
+  function resizeCanvas() {
+    parent.style.height = window.innerHeight - 15 + 'px';
+    var proportion = parent.clientWidth / parent.clientHeight;
+    if ( proportion >= ASPECT_RATIO ) {
+      canvas.height = parent.clientHeight;
+      canvas.width = canvas.height / ASPECT_RATIO;
+    } else {
+      canvas.width = parent.clientWidth;
+      canvas.height = canvas.width * ASPECT_RATIO;
+    }
   }
-}
+
+  function animationLoop(timeStamp) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);             // 1 Clear
+    draw();                                                       // 2 Draw
+    move();                                                       // 3 Move
+    rAF = requestAnimationFrame(animationLoop);                   // 4 Call again
+  }
+
+  function main() { rAF = requestAnimationFrame(animationLoop); }
+  function stopAnimation()  { if (rAF) { cancelAnimationFrame(rAF); }
+  }
+
+  function draw() {
+    drawRect(0, 0, canvas.width, canvas.height, 'black');
+    drawRect(0, pad1Y, PAD_WIDTH, PAD_HEIGHT, 'white');
+    drawRect(canvas.width-PAD_WIDTH, pad2Y, PAD_WIDTH, PAD_HEIGHT, 'white');
+    drawCircle(ballX, ballY, 5, 0, Math.PI*2, 'red');
+    ctx.fillStyle = 'white';
+    ctx.fillText(player1Score, canvas.width * 0.25, canvas.height * 0.5);
+    ctx.fillText(player2Score, canvas.width * 0.75, canvas.height * 0.5);
+  }
+
+  function drawRect(x,y,width,height,color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, width, height);
+  }
+
+  function drawCircle(centerX, centerY, radius, ini, end, color) {
+    ctx.fillStyle = 'red';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, ini, end, true);
+    ctx.fill();
+  }
+
+  function resetBall() {
+    if ( player1Score >= WINNING_SCORE || player2Score >= WINNING_SCORE) {
+      winScreen = true;
+    }
+    ballSpeedX = -ballSpeedX;
+    ballSpeedY = Math.random() * 8;
+    ballX = canvas.width/2;
+    ballY = canvas.height/2;
+  }
+
+  function computerMove() {
+    if ( pad2Y + (PAD_HEIGHT / 3) * 2 < ballY ) {
+      pad2Y += pad2Speed;
+    } else if ( pad2Y + (PAD_HEIGHT / 3) > ballY ) {
+      pad2Y -= pad2Speed;
+    }
+  }
+
+  function move() {
+    if (winScreen) {
+     if (player1Score >= WINNING_SCORE) {
+       ctx.fillText('You win! Click to continue...', 330, 100);
+     } else if (player2Score >= WINNING_SCORE) {
+       ctx.fillText('You lose! Click to continue...', 330, 100);
+     }
+     return;
+    }
+    computerMove();
+    ballX += ballSpeedX;
+    ballY += ballSpeedY;
+    if ( ballX < PAD_WIDTH + BALL_WIDTH) {
+      if (ballY > pad1Y && ballY < pad1Y + PAD_HEIGHT ) {
+        var deltaY = ballY - (pad1Y+(PAD_HEIGHT/2));
+        ballSpeedX = -ballSpeedX;
+        ballSpeedY = deltaY * 0.35;
+      } else {
+        player2Score++;
+        resetBall();
+      }
+    } else if ( ballX > canvas.width - PAD_WIDTH - BALL_WIDTH ) {
+      if (ballY > pad2Y && ballY < pad2Y + PAD_HEIGHT ) {
+        var deltaY = ballY - (pad2Y+(PAD_HEIGHT/2));
+        ballSpeedX = -ballSpeedX;
+        ballSpeedY = deltaY * 0.3;
+      } else {
+        player1Score++;
+        resetBall();
+      }
+    }
+    if ( ballY > canvas.height - BALL_WIDTH || ballY < BALL_WIDTH) {
+      ballSpeedY = -ballSpeedY;
+    }
+  }
+})();
 
 </script>
 </head>
